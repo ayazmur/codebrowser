@@ -63,7 +63,6 @@ async def proxy(request):
 
                 if 'text/html' in content_type:
                     html = body.decode('utf-8', errors='replace')
-                    html = _strip_js(html)
                     html = _rewrite_html(html, target_url, proxy_base)
                     body = html.encode('utf-8')
 
@@ -82,20 +81,21 @@ async def proxy(request):
         return HttpResponse('Error: ' + str(e), status=500)
 
 
-def _strip_js(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    for tag in soup.find_all('script'):
-        tag.decompose()
-    for tag in soup.find_all(style=True):
-        tag.attrs.pop('style', None)
-    for tag in soup.find_all(['onclick', 'onload', 'onerror', 'onmouseover', 'onsubmit'], True):
-        del tag['onclick']
-        break
-    return str(soup)
-
-
 def _rewrite_html(html, base_url, proxy_base):
     soup = BeautifulSoup(html, 'html.parser')
+
+    base_tag = soup.find('base')
+    if base_tag:
+        base_tag['href'] = proxy_base + 'proxy?url=' + base_url
+    else:
+        head = soup.head or soup.new_tag('head')
+        base_tag = soup.new_tag('base')
+        base_tag['href'] = proxy_base + 'proxy?url=' + base_url
+        if soup.head:
+            soup.head.insert(0, base_tag)
+        else:
+            soup.insert(0, head)
+            head.append(base_tag)
 
     for tag in soup.find_all(href=True):
         tag['href'] = _rewrite_url(tag['href'], base_url, proxy_base)
@@ -116,6 +116,35 @@ def _rewrite_html(html, base_url, proxy_base):
     for tag in soup.find_all('style'):
         if tag.string:
             tag.string = _rewrite_css_urls(tag.string, base_url, proxy_base)
+
+    interceptor = f'''<script>
+(function(){{
+    var proxyUrl = '{proxy_base}proxy?url=';
+    var originalPushState = window.history.pushState;
+    window.history.pushState = function(){{
+        originalPushState.apply(window.history, arguments);
+    }};
+    document.addEventListener('click', function(e){{
+        var link = e.target.closest('a');
+        if (link && link.href && link.href.startsWith('http')){{
+            e.preventDefault();
+            window.location.href = proxyUrl + encodeURIComponent(link.href);
+        }}
+    }}, true);
+    document.addEventListener('submit', function(e){{
+        var form = e.target;
+        if (form && form.action && form.action.startsWith('http')){{
+            var url = form.action + (form.method.toUpperCase() === 'GET' ? '?' + new URLSearchParams(new FormData(form)) : '');
+            e.preventDefault();
+            window.location.href = proxyUrl + encodeURIComponent(url);
+        }}
+    }}, true);
+}})();
+</script>'''
+
+    body = soup.find('body')
+    if body:
+        body.append(BeautifulSoup(interceptor, 'html.parser'))
 
     return str(soup)
 
