@@ -8,6 +8,7 @@
     var btnRefresh = document.getElementById('btn-refresh');
     var browserFrame = document.getElementById('browser-frame');
     var statusText = document.getElementById('status-text');
+    var loadingOverlay = document.getElementById('loading-overlay');
 
     function normalizeUrl(input) {
         input = input.trim();
@@ -30,6 +31,7 @@
 
         urlInput.value = url;
         statusText.textContent = 'Загрузка: ' + url;
+        loadingOverlay.classList.add('active');
 
         browserFrame.src = window.location.pathname + 'proxy?url=' + encodeURIComponent(url);
 
@@ -72,11 +74,8 @@
     });
 
     browserFrame.addEventListener('load', function() {
-        try {
-            statusText.textContent = 'Загружено';
-        } catch(e) {
-            statusText.textContent = 'Загружено';
-        }
+        loadingOverlay.classList.remove('active');
+        statusText.textContent = 'Загружено';
     });
 
     window.addEventListener('popstate', function(e) {
