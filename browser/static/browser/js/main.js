@@ -6,6 +6,7 @@
     var btnBack = document.getElementById('btn-back');
     var btnForward = document.getElementById('btn-forward');
     var btnRefresh = document.getElementById('btn-refresh');
+    var btnExternal = document.getElementById('btn-external');
     var browserFrame = document.getElementById('browser-frame');
     var statusText = document.getElementById('status-text');
 
@@ -31,12 +32,19 @@
         urlInput.value = url;
         statusText.textContent = 'Загрузка: ' + url;
 
-        browserFrame.src = window.location.pathname + '?url=' + encodeURIComponent(url);
+        browserFrame.src = url;
 
         var currentParams = new URLSearchParams(window.location.search);
         currentParams.set('url', url);
         var newUrl = window.location.pathname + '?' + currentParams.toString();
         window.history.pushState({url: url}, '', newUrl);
+    }
+
+    function openExternally() {
+        var url = urlInput.value;
+        if (url) {
+            window.open(url, '_blank');
+        }
     }
 
     btnGo.addEventListener('click', function() {
@@ -58,11 +66,20 @@
     });
 
     btnRefresh.addEventListener('click', function() {
-        var currentUrl = urlInput.value;
-        if (currentUrl) {
-            loadUrl(currentUrl);
+        try {
+            browserFrame.contentWindow.location.reload();
+        } catch(e) {
+            var currentSrc = browserFrame.src;
+            if (currentSrc) {
+                browserFrame.src = 'about:blank';
+                setTimeout(function() {
+                    browserFrame.src = currentSrc;
+                }, 100);
+            }
         }
     });
+
+    btnExternal.addEventListener('click', openExternally);
 
     browserFrame.addEventListener('load', function() {
         try {
@@ -75,7 +92,7 @@
     window.addEventListener('popstate', function(e) {
         if (e.state && e.state.url) {
             urlInput.value = e.state.url;
-            browserFrame.src = window.location.pathname + '?url=' + encodeURIComponent(e.state.url);
+            browserFrame.src = e.state.url;
             statusText.textContent = 'Навигация';
         }
     });
