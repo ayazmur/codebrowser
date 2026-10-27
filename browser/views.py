@@ -7,7 +7,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 
 logger = logging.getLogger(__name__)
 
