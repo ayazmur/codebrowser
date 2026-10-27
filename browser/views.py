@@ -4,7 +4,6 @@ import re
 from urllib.parse import urljoin, urlparse
 
 import aiohttp
-import aiofiles
 from bs4 import BeautifulSoup
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import render
