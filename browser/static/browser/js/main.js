@@ -32,7 +32,7 @@
         urlInput.value = url;
         statusText.textContent = 'Загрузка: ' + url;
 
-        browserFrame.src = url;
+        browserFrame.src = window.location.pathname + 'proxy?url=' + encodeURIComponent(url);
 
         var currentParams = new URLSearchParams(window.location.search);
         currentParams.set('url', url);
@@ -66,16 +66,9 @@
     });
 
     btnRefresh.addEventListener('click', function() {
-        try {
-            browserFrame.contentWindow.location.reload();
-        } catch(e) {
-            var currentSrc = browserFrame.src;
-            if (currentSrc) {
-                browserFrame.src = 'about:blank';
-                setTimeout(function() {
-                    browserFrame.src = currentSrc;
-                }, 100);
-            }
+        var currentUrl = urlInput.value;
+        if (currentUrl) {
+            loadUrl(currentUrl);
         }
     });
 
@@ -92,7 +85,7 @@
     window.addEventListener('popstate', function(e) {
         if (e.state && e.state.url) {
             urlInput.value = e.state.url;
-            browserFrame.src = e.state.url;
+            browserFrame.src = window.location.pathname + 'proxy?url=' + encodeURIComponent(e.state.url);
             statusText.textContent = 'Навигация';
         }
     });
