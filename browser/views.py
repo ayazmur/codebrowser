@@ -63,6 +63,7 @@ async def proxy(request):
 
                 if 'text/html' in content_type:
                     html = body.decode('utf-8', errors='replace')
+                    html = _strip_js(html)
                     html = _rewrite_html(html, target_url, proxy_base)
                     body = html.encode('utf-8')
 
@@ -79,6 +80,18 @@ async def proxy(request):
     except Exception as e:
         logger.error('Proxy error: %s', e)
         return HttpResponse('Error: ' + str(e), status=500)
+
+
+def _strip_js(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    for tag in soup.find_all('script'):
+        tag.decompose()
+    for tag in soup.find_all(style=True):
+        tag.attrs.pop('style', None)
+    for tag in soup.find_all(['onclick', 'onload', 'onerror', 'onmouseover', 'onsubmit'], True):
+        del tag['onclick']
+        break
+    return str(soup)
 
 
 def _rewrite_html(html, base_url, proxy_base):

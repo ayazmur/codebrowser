@@ -6,7 +6,6 @@
     var btnBack = document.getElementById('btn-back');
     var btnForward = document.getElementById('btn-forward');
     var btnRefresh = document.getElementById('btn-refresh');
-    var btnExternal = document.getElementById('btn-external');
     var browserFrame = document.getElementById('browser-frame');
     var statusText = document.getElementById('status-text');
 
@@ -71,8 +70,6 @@
             loadUrl(currentUrl);
         }
     });
-
-    btnExternal.addEventListener('click', openExternally);
 
     browserFrame.addEventListener('load', function() {
         try {
