@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Browser</title>
+    <link rel="stylesheet" href="/static/browser/css/style.css">
+</head>
+<body>
+    <div class="browser-container">
+        <div class="toolbar">
+            <div class="nav-buttons">
+                <button class="nav-btn" id="btn-back" title="Назад">←</button>
+                <button class="nav-btn" id="btn-forward" title="Вперёд">→</button>
+                <button class="nav-btn" id="btn-refresh" title="Обновить">↻</button>
+            </div>
+            <div class="url-bar-container">
+                <input type="text" id="url-input" class="url-input" placeholder="Введите URL (например, google.com)" value="{{ initial_url }}" autocomplete="off">
+                <button class="go-btn" id="btn-go">→</button>
+            </div>
+        </div>
+        <div class="browser-frame-container">
+            <iframe id="browser-frame" src="" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals"></iframe>
+        </div>
+    </div>
+    <div class="status-bar">
+        <span id="status-text">Готово</span>
+    </div>
+    <script src="/static/browser/js/main.js"></script>
+</body>
+</html>
