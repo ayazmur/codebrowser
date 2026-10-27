@@ -113,6 +113,6 @@ def _rewrite_css_urls(css_text, base_url, proxy_base):
         absolute_url = urljoin(base_url, url)
         return match.group(1) + proxy_base + 'proxy?url=' + absolute_url
 
-    css_text = re.sub(r'url\(\s*(?:\'(|"|)(.*?)\1\s*\)', replace_url, css_text)
+    css_text = re.sub(r'url\(\s*(?:\'(.*?)\'|"(.*?)"|(.*?))\s*\)', replace_url, css_text)
     css_text = re.sub(r'url\(\s*(.*?)\s*\)', replace_url, css_text)
     return css_text
