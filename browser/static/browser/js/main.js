@@ -90,7 +90,8 @@
         }
     });
 
-    var initialUrl = '{{ initial_url|safe }}';
+    var params = new URLSearchParams(window.location.search);
+    var initialUrl = params.get('url');
     if (initialUrl) {
         loadUrl(initialUrl);
     }
