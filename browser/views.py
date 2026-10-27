@@ -109,10 +109,10 @@ def _rewrite_url(url, base_url, proxy_base):
 
 def _rewrite_css_urls(css_text, base_url, proxy_base):
     def replace_url(match):
-        url = match.group(2) or match.group(3)
+        url = match.group(1) or match.group(2)
         absolute_url = urljoin(base_url, url)
-        return match.group(1) + proxy_base + 'proxy?url=' + absolute_url
+        return match.group(0)[:-1] + proxy_base + 'proxy?url=' + absolute_url + ')'
 
-    css_text = re.sub(r'url\(\s*(?:\'(.*?)\'|"(.*?)"|(.*?))\s*\)', replace_url, css_text)
-    css_text = re.sub(r'url\(\s*(.*?)\s*\)', replace_url, css_text)
+    css_text = re.sub(r'url\(\s*[\'"]([^"\']*)[\'"]\s*\)', replace_url, css_text)
+    css_text = re.sub(r'url\(\s*(.+?)\s*\)', replace_url, css_text)
     return css_text
