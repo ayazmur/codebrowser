@@ -20,7 +20,7 @@ def index(request):
     })
 
 
-@require_GET
+@require_http_methods(['GET', 'POST'])
 async def proxy(request):
     target_url = request.GET.get('url', '')
     if not target_url:
@@ -40,9 +40,21 @@ async def proxy(request):
         'Accept-Encoding': 'gzip, deflate',
     }
 
+    kwargs = {
+        'headers': headers,
+        'timeout': aiohttp.ClientTimeout(total=30),
+        'allow_redirects': True,
+    }
+
+    if request.method == 'POST':
+        kwargs['data'] = request.body
+        for key in ('Content-Type', 'Content-Length'):
+            if key in request.headers:
+                kwargs['headers'][key] = request.headers[key]
+
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(target_url, headers=headers, timeout=aiohttp.ClientTimeout(total=30), allow_redirects=True) as resp:
+            async with session.get(target_url, **kwargs) if request.method == 'GET' else session.post(target_url, **kwargs) as resp:
                 if resp.status != 200:
                     return HttpResponse(f'Server returned {resp.status}', status=resp.status)
 
@@ -81,6 +93,8 @@ def _rewrite_html(html, base_url, proxy_base):
     for tag in soup.find_all('form'):
         if tag.get('action'):
             tag['action'] = _rewrite_url(tag['action'], base_url, proxy_base)
+        if tag.get('method', 'get').upper() == 'POST':
+            tag['method'] = 'GET'
 
     for tag in soup.find_all('link', rel=lambda x: x and 'stylesheet' in x):
         if tag.get('href'):
